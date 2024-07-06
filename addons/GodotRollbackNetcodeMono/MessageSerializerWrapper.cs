@@ -1,12 +1,11 @@
-﻿using Fractural;
-using Godot.Collections;
+﻿using Godot.Collections;
 
 namespace GodotRollbackNetcode
 {
-    public class MessageSerializerWrapper : GDScriptWrapper, IMessageSerializer
+    public partial class MessageSerializerWrapper : GDScriptWrapper, IMessageSerializer
     {
         public MessageSerializerWrapper() { }
-        public MessageSerializerWrapper(Godot.Object source) : base(source) { }
+        public MessageSerializerWrapper(Godot.GodotObject source) : base(source) { }
 
         public byte[] SerializeInput(Dictionary input) => (byte[])Source.Call("serialize_input", input);
         public byte[] SerializeMessage(Dictionary msg) => (byte[])Source.Call("serialize_message", msg);

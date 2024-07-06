@@ -1,35 +1,37 @@
 [remap]
 
 importer="texture"
-type="StreamTexture"
-path="res://.import/NetworkAnimationPlayer.svg-b9f1abd6e4960f415070966cc9f70f61.stex"
+type="CompressedTexture2D"
+uid="uid://d10wu2lyox1xx"
+path="res://.godot/imported/NetworkAnimationPlayer.svg-dc5cb2385bea63182bb79547059f3849.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/GodotRollbackNetcodeMono/Assets/NetworkAnimationPlayer.svg"
-dest_files=[ "res://.import/NetworkAnimationPlayer.svg-b9f1abd6e4960f415070966cc9f70f61.stex" ]
+source_file="res://Addons/GodotRollbackNetcodeMono/Assets/NetworkAnimationPlayer.svg"
+dest_files=["res://.godot/imported/NetworkAnimationPlayer.svg-dc5cb2385bea63182bb79547059f3849.ctex"]
 
 [params]
 
 compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
-compress/hdr_mode=0
-compress/bptc_ldr=0
+compress/hdr_compression=1
 compress/normal_map=0
-flags/repeat=0
-flags/filter=true
-flags/mipmaps=false
-flags/anisotropic=false
-flags/srgb=2
+compress/channel_pack=0
+mipmaps/generate=false
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
 process/fix_alpha_border=true
 process/premult_alpha=false
-process/HDR_as_SRGB=false
-process/invert_color=false
 process/normal_map_invert_y=false
-stream=false
-size_limit=0
-detect_3d=true
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=1
 svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

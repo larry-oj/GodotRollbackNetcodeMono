@@ -1,13 +1,12 @@
-﻿using Fractural;
-using Godot;
+﻿using Godot;
 using Godot.Collections;
 
 namespace GodotRollbackNetcode
 {
-    public class NetworkAdaptorWrapper : GDScriptWrapper, INetworkAdaptor
+    public partial class NetworkAdaptorWrapper : GDScriptWrapper, INetworkAdaptor
     {
         public NetworkAdaptorWrapper() { }
-        public NetworkAdaptorWrapper(Godot.Object source) : base(source) { }
+        public NetworkAdaptorWrapper(Godot.GodotObject source) : base(source) { }
 
         public void AttachNetworkAdaptor(SyncManager syncManager) => Source.Call("attach_network_adaptor", syncManager.Source);
         public void DetachNetworkAdaptor(SyncManager syncManager) => Source.Call("detach_network_adaptor", syncManager.Source);

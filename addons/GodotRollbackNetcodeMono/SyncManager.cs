@@ -1,11 +1,10 @@
-using Fractural;
 using Godot;
 using System;
 using GDC = Godot.Collections;
 
 namespace GodotRollbackNetcode
 {
-    public class SyncManager : GDScriptWrapper
+    public partial class SyncManager : GDScriptWrapper
     {
         #region Singleton
         private static SyncManager instance;
@@ -34,7 +33,7 @@ namespace GodotRollbackNetcode
         {
             get
             {
-                var source = (Godot.Object)Source.Get("network_adaptor");
+                var source = (Godot.GodotObject)Source.Get("network_adaptor");
                 if (source == null) return null;
                 if (source is INetworkAdaptor networkAdaptor) return networkAdaptor;
                 if (networkAdaptorWrapper == null || networkAdaptorWrapper.Source != source)
@@ -47,10 +46,10 @@ namespace GodotRollbackNetcode
                     Source.Set("network_adaptor", @base);
                 else if (value is NetworkAdaptorWrapper wrapper)
                     Source.Set("network_adaptor", wrapper.Source);
-                else if (value is Godot.Object obj)
+                else if (value is Godot.GodotObject obj)
                     Source.Set("network_adaptor", obj);
                 else
-                    GD.PrintErr($"You can only assign {nameof(BaseNetworkAdaptor)}, {nameof(NetworkAdaptorWrapper)}, or {nameof(Godot)}.{nameof(Godot.Object)} to {nameof(SyncManager)}.{nameof(NetworkAdaptor)}");
+                    GD.PrintErr($"You can only assign {nameof(BaseNetworkAdaptor)}, {nameof(NetworkAdaptorWrapper)}, or {nameof(Godot)}.{nameof(Godot.GodotObject)} to {nameof(SyncManager)}.{nameof(NetworkAdaptor)}");
             }
         }
 
@@ -59,7 +58,7 @@ namespace GodotRollbackNetcode
         {
             get
             {
-                var source = (Godot.Object)Source.Get("message_serializer");
+                var source = (Godot.GodotObject)Source.Get("message_serializer");
                 if (source == null) return null;
                 if (source is IMessageSerializer messageSerializer) return messageSerializer;
                 if (messageSerializerWrapper == null || messageSerializerWrapper.Source != source)
@@ -72,10 +71,10 @@ namespace GodotRollbackNetcode
                     Source.Set("network_adaptor", @base);
                 else if (value is MessageSerializerWrapper wrapper)
                     Source.Set("network_adaptor", wrapper.Source);
-                else if (value is Godot.Object obj)
+                else if (value is Godot.GodotObject obj)
                     Source.Set("network_adaptor", obj);
                 else
-                    GD.PrintErr($"You can only assign {nameof(BaseMessageSerializer)}, {nameof(MessageSerializerWrapper)}, or {nameof(Godot)}.{nameof(Godot.Object)} to {nameof(SyncManager)}.{nameof(MessageSerializer)}");
+                    GD.PrintErr($"You can only assign {nameof(BaseMessageSerializer)}, {nameof(MessageSerializerWrapper)}, or {nameof(Godot)}.{nameof(Godot.GodotObject)} to {nameof(SyncManager)}.{nameof(MessageSerializer)}");
             }
         }
 
@@ -84,7 +83,7 @@ namespace GodotRollbackNetcode
         {
             get
             {
-                var source = (Godot.Object)Source.Get("hash_serializer");
+                var source = (Godot.GodotObject)Source.Get("hash_serializer");
                 if (source == null) return null;
                 if (source is IHashSerializer hashSerializer) return hashSerializer;
                 if (hashSerializerWrapper == null || hashSerializerWrapper.Source != source)
@@ -97,10 +96,10 @@ namespace GodotRollbackNetcode
                     Source.Set("network_adaptor", @base);
                 else if (value is HashSerializerWrapper wrapper)
                     Source.Set("network_adaptor", wrapper.Source);
-                else if (value is Godot.Object obj)
+                else if (value is Godot.GodotObject obj)
                     Source.Set("network_adaptor", obj);
                 else
-                    GD.PrintErr($"You can only assign {nameof(BaseHashSerializer)}, {nameof(HashSerializerWrapper)}, or {nameof(Godot)}.{nameof(Godot.Object)} to {nameof(SyncManager)}.{nameof(HashSerializer)}");
+                    GD.PrintErr($"You can only assign {nameof(BaseHashSerializer)}, {nameof(HashSerializerWrapper)}, or {nameof(Godot)}.{nameof(Godot.GodotObject)} to {nameof(SyncManager)}.{nameof(HashSerializer)}");
             }
         }
         #endregion
@@ -278,7 +277,7 @@ namespace GodotRollbackNetcode
 
         public SyncManager() { }
 
-        public SyncManager(Godot.Object source) : base(source) { }
+        public SyncManager(Godot.GodotObject source) : base(source) { }
 
         #region Methods
         public void ResetNetworkAdaptor() => Source.Call("reset_network_adaptor");
@@ -326,9 +325,9 @@ namespace GodotRollbackNetcode
         public void PlaySound(string identifier, AudioStream sound, Vector2? position = null, float? volumeDb = null, float? pitchScale = null, string bus = null)
         {
             var info = new GDC.Dictionary();
-            if (position != null) info["position"] = position;
-            if (volumeDb != null) info["volume_db"] = volumeDb;
-            if (pitchScale != null) info["pitch_scale"] = pitchScale;
+            if (position != null) info["position"] = Variant.From(position);
+            if (volumeDb != null) info["volume_db"] = Variant.From(volumeDb);
+            if (pitchScale != null) info["pitch_scale"] = Variant.From(pitchScale);
             if (bus != null) info["bus"] = bus;
             Source.Call("play_sound", identifier, sound, info);
         }
@@ -365,7 +364,7 @@ namespace GodotRollbackNetcode
         public delegate void PeerRemovedDelegate(int peerId);
         public event PeerRemovedDelegate PeerRemoved;
 
-        public delegate void PeerPingedBackDelegate(Godot.Object peer);
+        public delegate void PeerPingedBackDelegate(Godot.GodotObject peer);
         public event PeerPingedBackDelegate PeerPingedBack;
 
         public delegate void StatedLoadedDelegate(int rollbackTicks);
@@ -392,28 +391,28 @@ namespace GodotRollbackNetcode
         #region Signal Forwarding
         protected override void ForwardSignalsToEvents()
         {
-            Source.Connect("sync_started", this, nameof(OnSyncStarted));
-            Source.Connect("sync_stopped", this, nameof(OnSyncStopped));
-            Source.Connect("sync_lost", this, nameof(OnSyncLost));
-            Source.Connect("sync_regained", this, nameof(OnSyncRegained));
-            Source.Connect("sync_error", this, nameof(OnSyncError));
+            Source.Connect("sync_started", new Callable(this, nameof(OnSyncStarted)));
+            Source.Connect("sync_stopped", new Callable(this, nameof(OnSyncStopped)));
+            Source.Connect("sync_lost", new Callable(this, nameof(OnSyncLost)));
+            Source.Connect("sync_regained", new Callable(this, nameof(OnSyncRegained)));
+            Source.Connect("sync_error", new Callable(this, nameof(OnSyncError)));
 
-            Source.Connect("skip_ticks_flagged", this, nameof(OnSkipTicksFlagged));
-            Source.Connect("rollback_flagged", this, nameof(OnRollbackFlagged));
-            Source.Connect("prediction_missed", this, nameof(OnPredictionMissed));
-            Source.Connect("remote_state_mismatch", this, nameof(OnRemoteStateMismatch));
+            Source.Connect("skip_ticks_flagged", new Callable(this, nameof(OnSkipTicksFlagged)));
+            Source.Connect("rollback_flagged", new Callable(this, nameof(OnRollbackFlagged)));
+            Source.Connect("prediction_missed", new Callable(this, nameof(OnPredictionMissed)));
+            Source.Connect("remote_state_mismatch", new Callable(this, nameof(OnRemoteStateMismatch)));
 
-            Source.Connect("peer_added", this, nameof(OnPeerAdded));
-            Source.Connect("peer_removed", this, nameof(OnPeerRemoved));
-            Source.Connect("peer_pinged_back", this, nameof(OnPeerPingedBack));
+            Source.Connect("peer_added", new Callable(this, nameof(OnPeerAdded)));
+            Source.Connect("peer_removed", new Callable(this, nameof(OnPeerRemoved)));
+            Source.Connect("peer_pinged_back", new Callable(this, nameof(OnPeerPingedBack)));
 
-            Source.Connect("state_loaded", this, nameof(OnStateLoaded));
-            Source.Connect("tick_finished", this, nameof(OnTickFinished));
-            Source.Connect("tick_retired", this, nameof(OnTickRetired));
-            Source.Connect("tick_input_complete", this, nameof(OnTickInputComplete));
-            Source.Connect("scene_spawned", this, nameof(OnSceneSpawned));
-            Source.Connect("scene_despawned", this, nameof(OnSceneDespawned));
-            Source.Connect("interpolation_frame", this, nameof(OnInterpolationFrame));
+            Source.Connect("state_loaded", new Callable(this, nameof(OnStateLoaded)));
+            Source.Connect("tick_finished", new Callable(this, nameof(OnTickFinished)));
+            Source.Connect("tick_retired", new Callable(this, nameof(OnTickRetired)));
+            Source.Connect("tick_input_complete", new Callable(this, nameof(OnTickInputComplete)));
+            Source.Connect("scene_spawned", new Callable(this, nameof(OnSceneSpawned)));
+            Source.Connect("scene_despawned", new Callable(this, nameof(OnSceneDespawned)));
+            Source.Connect("interpolation_frame", new Callable(this, nameof(OnInterpolationFrame)));
         }
 
         private void OnInterpolationFrame()
@@ -451,7 +450,7 @@ namespace GodotRollbackNetcode
             StateLoaded?.Invoke(rollbackTicks);
         }
 
-        private void OnPeerPingedBack(Godot.Object peer)
+        private void OnPeerPingedBack(Godot.GodotObject peer)
         {
             PeerPingedBack?.Invoke(peer);
         }

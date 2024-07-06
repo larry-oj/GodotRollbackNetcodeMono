@@ -1,7 +1,6 @@
 ﻿using GDC = Godot.Collections;
 using Godot;
 using System;
-using Fractural.Utils;
 
 namespace GodotRollbackNetcode
 {
@@ -12,7 +11,7 @@ namespace GodotRollbackNetcode
         object Unserialize(object value);
     }
 
-    public class BaseHashSerializer : Godot.Reference, IHashSerializer
+    public partial class BaseHashSerializer : Godot.RefCounted, IHashSerializer
     {
         private object serialize(object value) => Serialize(value);
 
@@ -24,7 +23,7 @@ namespace GodotRollbackNetcode
                 return SerializeArray(array);
             else if (value is Resource resource)
                 return SerializeResource(resource);
-            else if (value is Godot.Object obj)
+            else if (value is Godot.GodotObject obj)
                 return SerializeObject(obj);
 
             return SerializeOther(value);
@@ -34,7 +33,7 @@ namespace GodotRollbackNetcode
         {
             var serialized = new GDC.Dictionary();
             foreach (var key in value.Keys)
-                serialized[key] = Serialize(value[key]);
+                serialized[key] = Variant.From(Serialize(value[key]));
             return serialized;
         }
 
@@ -42,7 +41,7 @@ namespace GodotRollbackNetcode
         {
             var serialized = new GDC.Array();
             foreach (var item in array)
-                serialized.Add(Serialize(item));
+                serialized.Add(Variant.From(Serialize(item)));
             return serialized;
         }
 
@@ -55,11 +54,11 @@ namespace GodotRollbackNetcode
             };
         }
 
-        protected virtual GDC.Dictionary SerializeObject(Godot.Object value)
+        protected virtual GDC.Dictionary SerializeObject(Godot.GodotObject value)
         {
             return new GDC.Dictionary()
             {
-                ["_"] = nameof(Godot.Object),
+                ["_"] = nameof(Godot.GodotObject),
                 ["str"] = value.ToString(),
             };
         }
@@ -70,16 +69,16 @@ namespace GodotRollbackNetcode
                 return new GDC.Dictionary()
                 {
                     ["_"] = nameof(Vector2),
-                    ["x"] = vector2.x,
-                    ["y"] = vector2.y
+                    ["x"] = vector2.X,
+                    ["y"] = vector2.Y
                 };
             else if (value is Vector3 vector3)
                 return new GDC.Dictionary()
                 {
                     ["_"] = nameof(Vector3),
-                    ["x"] = vector3.x,
-                    ["y"] = vector3.y,
-                    ["z"] = vector3.z
+                    ["x"] = vector3.X,
+                    ["y"] = vector3.Y,
+                    ["z"] = vector3.Z
                 };
             else if (value is Transform2D transform2D)
                 return new GDC.Dictionary()
@@ -87,47 +86,47 @@ namespace GodotRollbackNetcode
                     ["_"] = nameof(Transform2D),
                     ["x"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform2D.x.x,
-                        ["y"] = transform2D.x.y
+                        ["x"] = transform2D.X.X,
+                        ["y"] = transform2D.X.Y
                     },
                     ["y"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform2D.y.x,
-                        ["y"] = transform2D.y.y
+                        ["x"] = transform2D.Y.X,
+                        ["y"] = transform2D.Y.Y
                     },
                     ["origin"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform2D.origin.x,
-                        ["y"] = transform2D.origin.y
+                        ["x"] = transform2D.Origin.X,
+                        ["y"] = transform2D.Origin.Y
                     }
                 };
-            else if (value is Transform transform)
+            else if (value is Transform3D transform)
                 return new GDC.Dictionary()
                 {
-                    ["_"] = nameof(Transform),
+                    ["_"] = nameof(Transform3D),
                     ["x"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform.basis.x.x,
-                        ["y"] = transform.basis.x.y,
-                        ["z"] = transform.basis.x.z,
+                        ["x"] = transform.Basis.X.X,
+                        ["y"] = transform.Basis.X.Y,
+                        ["z"] = transform.Basis.X.Z,
                     },
                     ["y"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform.basis.y.x,
-                        ["y"] = transform.basis.y.y,
-                        ["z"] = transform.basis.y.z
+                        ["x"] = transform.Basis.Y.X,
+                        ["y"] = transform.Basis.Y.Y,
+                        ["z"] = transform.Basis.Y.Z
                     },
                     ["z"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform.basis.z.x,
-                        ["y"] = transform.basis.z.y,
-                        ["z"] = transform.basis.z.z
+                        ["x"] = transform.Basis.Z.X,
+                        ["y"] = transform.Basis.Z.Y,
+                        ["z"] = transform.Basis.Z.Z
                     },
                     ["origin"] = new GDC.Dictionary()
                     {
-                        ["x"] = transform.origin.x,
-                        ["y"] = transform.origin.y,
-                        ["z"] = transform.origin.z,
+                        ["x"] = transform.Origin.X,
+                        ["y"] = transform.Origin.Y,
+                        ["z"] = transform.Origin.Z,
                     }
                 };
             return value;
@@ -135,15 +134,15 @@ namespace GodotRollbackNetcode
 
         private object unserialize(object value) => Unserialize(value);
 
-        readonly string[] SerializedOthers = new[] { nameof(Vector2), nameof(Vector3), nameof(Transform2D), nameof(Transform) };
+        readonly string[] SerializedOthers = new[] { nameof(Vector2), nameof(Vector3), nameof(Transform2D), nameof(Transform3D) };
 
         public virtual object Unserialize(object value)
         {
             if (value is GDC.Dictionary dictionary)
             {
-                if (!dictionary.Contains("_"))
+                if (!dictionary.ContainsKey("_"))
                     return UnserializeDictionary(dictionary);
-                var type = dictionary.Get<string>("_");
+                var type = dictionary["_"].ToString();
                 if (type == nameof(Resource))
                     return UnserializeResource(dictionary);
                 else if (Array.IndexOf(SerializedOthers, type) > -1)
@@ -159,8 +158,8 @@ namespace GodotRollbackNetcode
         protected virtual GDC.Dictionary UnserializeDictionary(GDC.Dictionary value)
         {
             var unserialized = new GDC.Dictionary();
-            foreach (var key in value)
-                unserialized[key] = Unserialize(value[key]);
+            foreach (var key in value.Keys)
+                unserialized[key] = Variant.From(Unserialize(value[key]));
             return unserialized;
         }
 
@@ -168,7 +167,7 @@ namespace GodotRollbackNetcode
         {
             var unserialized = new GDC.Array();
             foreach (var item in value)
-                unserialized.Add(Unserialize(item));
+                unserialized.Add(Variant.From(Unserialize(item)));
             return unserialized;
         }
 
@@ -179,34 +178,29 @@ namespace GodotRollbackNetcode
 
         protected virtual string UnserializeObject(GDC.Dictionary value)
         {
-            if (value["_"] is Godot.Object)
+            // experimental
+            // if (value["_"] is Godot.Object)
                 return (string)value["string"];
-            return null;
+            // return null;
         }
 
         protected virtual object UnserializeOther(GDC.Dictionary value)
         {
-            switch ((string)value["_"])
+            // converted to switch expression
+            return (string)value["_"] switch
             {
-                case nameof(Vector2):
-                    return new Vector2(value.Get<float>("x"), value.Get<float>("y"));
-                case nameof(Vector3):
-                    return new Vector3(value.Get<float>("x"), value.Get<float>("y"), value.Get<float>("z"));
-                case nameof(Transform2D):
-                    return new Transform2D(
-                        new Vector2(value.Get<float>("x.x"), value.Get<float>("x.y")),
-                        new Vector2(value.Get<float>("y.x"), value.Get<float>("y.y")),
-                        new Vector2(value.Get<float>("origin.x"), value.Get<float>("origin.y"))
-                    );
-                case nameof(Transform):
-                    return new Transform(
-                        new Vector3(value.Get<float>("x.x"), value.Get<float>("x.y"), value.Get<float>("x.z")),
-                        new Vector3(value.Get<float>("y.x"), value.Get<float>("y.y"), value.Get<float>("y.z")),
-                        new Vector3(value.Get<float>("z.x"), value.Get<float>("z.y"), value.Get<float>("z.z")),
-                        new Vector3(value.Get<float>("origin.x"), value.Get<float>("origin.y"), value.Get<float>("origin.z"))
-                    );
-            }
-            return null;
+                nameof(Vector2) => new Vector2((float)value["x"], (float)value["y"]),
+                nameof(Vector3) => new Vector3((float)value["x"], (float)value["y"], (float)value["z"]),
+                nameof(Transform2D) => new Transform2D(new Vector2((float)value["x.x"], (float)value["x.y"]),
+                    new Vector2((float)value["y.x"], (float)value["y.y"]),
+                    new Vector2((float)value["origin.x"], (float)value["origin.y"])),
+                nameof(Transform3D) => new Transform3D(
+                    new Vector3((float)value["x.x"], (float)value["x.y"], (float)value["x.z"]),
+                    new Vector3((float)value["y.x"], (float)value["y.y"], (float)value["y.z"]),
+                    new Vector3((float)value["z.x"], (float)value["z.y"], (float)value["z.z"]),
+                    new Vector3((float)value["origin.x"], (float)value["origin.y"], (float)value["origin.z"])),
+                _ => null
+            };
         }
     }
 }

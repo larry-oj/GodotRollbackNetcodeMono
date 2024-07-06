@@ -1,5 +1,4 @@
-﻿using Fractural.Utils;
-using Godot;
+﻿using Godot;
 using System;
 using System.Reflection;
 using GDC = Godot.Collections;
@@ -18,7 +17,7 @@ namespace GodotRollbackNetcode
         public static T GetStateValue<T>(this GDC.Dictionary stateDict, string key)
         {
             key = key.TrimStart('_');
-            return stateDict.Get<T>(key);
+            return (T)((object)Variant.From(stateDict[key]));
         }
 
         /// <summary>
@@ -33,8 +32,12 @@ namespace GodotRollbackNetcode
             var newDict = new GDC.Dictionary();
             foreach (var key in stateDict.Keys)
             {
-                if (key is string strKey && !strKey.StartsWith("_"))
-                    newDict["_" + key] = stateDict[key];
+                if (key.VariantType is Variant.Type.String)
+                {
+                    var strKey = (string)key;
+                    if (!strKey.StartsWith("_"))
+                        newDict["_" + key] = stateDict[key];
+                }
                 else
                     newDict[key] = stateDict[key];
             }

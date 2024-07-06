@@ -1,0 +1,111 @@
+[gd_scene load_steps=3 format=3 uid="uid://dg71bh5gtgo0m"]
+
+[ext_resource type="Script" path="res://Main.cs" id="1_gxo6j"]
+[ext_resource type="PackedScene" uid="uid://bo1rh8lbtdtlc" path="res://player.tscn" id="2_exjxt"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_gxo6j")
+
+[node name="PlayerClient" parent="." instance=ExtResource("2_exjxt")]
+unique_name_in_owner = true
+position = Vector2(648, 197)
+
+[node name="PlayerServer" parent="." instance=ExtResource("2_exjxt")]
+unique_name_in_owner = true
+position = Vector2(146, 199)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="MessageLabel" type="Label" parent="CanvasLayer"]
+unique_name_in_owner = true
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+horizontal_alignment = 1
+
+[node name="SyncLabel" type="Label" parent="CanvasLayer"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -128.0
+offset_bottom = 23.0
+grow_horizontal = 0
+text = "Regaining sync..."
+
+[node name="ConnectionPanel" type="PanelContainer" parent="CanvasLayer"]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -168.0
+offset_top = -65.5
+offset_right = 168.0
+offset_bottom = 65.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/ConnectionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="GridContainer" type="GridContainer" parent="CanvasLayer/ConnectionPanel/MarginContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="HostLabel" type="Label" parent="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Host:"
+horizontal_alignment = 2
+
+[node name="HostField" type="LineEdit" parent="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "127.0.0.1"
+
+[node name="PortLabel" type="Label" parent="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Port:"
+horizontal_alignment = 2
+
+[node name="PortField" type="LineEdit" parent="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "9999"
+
+[node name="ServerButton" type="Button" parent="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Server"
+
+[node name="ClientButton" type="Button" parent="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Client"
+
+[node name="ResetButton" type="Button" parent="CanvasLayer"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -51.0
+offset_top = -31.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "Reset"
+
+[connection signal="pressed" from="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer/ServerButton" to="." method="OnServerButtonPressed"]
+[connection signal="pressed" from="CanvasLayer/ConnectionPanel/MarginContainer/GridContainer/ClientButton" to="." method="OnClientButtonPressed"]
+[connection signal="pressed" from="CanvasLayer/ResetButton" to="." method="OnResetButtonPressed"]
